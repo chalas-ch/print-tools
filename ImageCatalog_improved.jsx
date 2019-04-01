@@ -15,11 +15,6 @@
 //to include in the catalog. You can remove extensions from or add extensions to this list. 
 //myExtensions is a global. Mac OS users should also look at the file types in the myFileFilter function.
 
-
-// Edit: Includes
-//@include "json3.js"
-//@include "indexOf.js"
-
 main();
 
 function main() {
@@ -27,9 +22,9 @@ function main() {
 	//Make certain that user interaction (display of dialogs, etc.) is turned on.
 	app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
 	myExtensions = [".png", ".jpg", ".jpeg", ".eps", ".ps", ".pdf", ".tif", ".tiff", ".gif", ".psd", ".ai"];
-	//Display the folder browser. 
+	//Display the folder browser.
 	var myFolder = Folder.selectDialog("Select the folder containing the images", "");
-	//Get the path to the folder containing the files you want to place. 
+	//Get the path to the folder containing the files you want to place.
 	if (myFolder != null) {
 		if (File.fs === "Macintosh") {
 			myFilteredFiles = myMacOSFileFilter(myFolder);
@@ -41,6 +36,20 @@ function main() {
 			alert("Done!");
 		}
 	}
+}
+
+// Edit: function indexOf
+function indexOf(item1, item2) {
+	var indexOf = -1;
+
+	for (var i = 0; i < item1.length; i++) {
+
+		if (item1[i] == item2) {
+			indexOf = i;
+		}
+	}
+
+	return indexOf;
 }
 
 // Edit: Function to order an array according to another

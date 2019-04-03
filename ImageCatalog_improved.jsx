@@ -158,6 +158,10 @@ function myDisplayDialog(myFiles, myFolder) {
 	var myStyleNames = myGetParagraphStyleNames(app);
 	var myLayerNames = ["Layer 1", "Labels"];
 	var myDialog = app.dialogs.add({ name: "Image Catalog" });
+
+	// Edit: added alignment array
+	var myAlignments = ["Top Left", "Top Center", "Top Right", "Middle Left", "Middle Center", "Middle Right", "Bottom Left", "Bottom Center", "Bottom Right"];
+
 	with (myDialog.dialogColumns.add()) {
 		with (dialogRows.add()) {
 			staticTexts.add({ staticLabel: "Information:" });
@@ -218,6 +222,20 @@ function myDisplayDialog(myFiles, myFolder) {
 							staticLabel: "Frame to Content",
 							checkedState: true
 						});
+					}
+				}
+				with (dialogColumns.add()) {
+					//Label type
+					with (dialogRows.add()) {
+						with (dialogColumns.add()) {
+							staticTexts.add({ staticLabel: "Align:", minWidth: myLabelWidth });
+						}
+						with (dialogColumns.add()) {
+							var myAlignDropdown = dropdowns.add({
+								stringList: myAlignments,
+								selectedIndex: 0
+							});
+						}
 					}
 				}
 				with (dialogRows.add()) {
@@ -330,11 +348,12 @@ function myDisplayDialog(myFiles, myFolder) {
 			// Edit: added makeNewDocument
 			var makeNewDocument = !myExistingDocumentGroup.checkedState;
 			var makeNewPages = myMakeNewPagesCheckbox.checkedState;
+			var myAlignment = myAlignments[myAlignDropdown.selectedIndex];
 
 			myDialog.destroy();
 
-			// Edit: added makeNewDocument
-			myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemoveEmptyFrames, myFitProportional, myFitCenterContent, myFitFrameToContent, myHorizontalOffset, myVerticalOffset, myMakeLabels, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName, makeNewDocument, makeNewPages);
+			// Edit: added makeNewDocument, makeNewPages, myAlignment
+			myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemoveEmptyFrames, myFitProportional, myFitCenterContent, myFitFrameToContent, myHorizontalOffset, myVerticalOffset, myMakeLabels, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName, makeNewDocument, makeNewPages, myAlignment);
 		} else {
 			myDialog.destroy();
 		}
@@ -357,7 +376,7 @@ function myGetParagraphStyleNames(myDocument) {
 }
 
 // Edit: added makeNewDocument
-function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemoveEmptyFrames, myFitProportional, myFitCenterContent, myFitFrameToContent, myHorizontalOffset, myVerticalOffset, myMakeLabels, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName, makeNewDocument, makeNewPages) {
+function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemoveEmptyFrames, myFitProportional, myFitCenterContent, myFitFrameToContent, myHorizontalOffset, myVerticalOffset, myMakeLabels, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName, makeNewDocument, makeNewPages, myAlignment) {
 	// Edit: Added myDocument
 	var myPage, myFile, myCounter, myX1, myY1, myX2, myY2, myRectangle, myLabelStyle, myLabelLayer, myDocument;
 	var myParagraphStyle, myError;
@@ -377,15 +396,15 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	if (makeNewDocument === true) {
 		myPageOffset = 0;
 	}
-	// If the "new pages" option is true
-	else if (makeNewPages === true) {
+	// If we use the existing document and we add new pages
+	if (makeNewDocument === false && makeNewPages === true) {
 		myPageOffset = myDocument.pages.length;
 		myFrameOffset = myDocument.rectangles.length;
 	}
-	// If we add to existing pages
-	else {
+	// If we use the existing document and we add to existing pages
+	if (makeNewDocument === false && makeNewPages === false) {
 		myPageOffset = 0;
-		myFrameOffset = myDocument.rectangles.length;
+		myFrameOffset = 0;
 	}
 
 	myDocument.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.points;
@@ -398,7 +417,7 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	}
 
 	// Edit: add number of page if not new doc
-	if (makeNewDocument === false) {
+	if (makeNewDocument === false && makeNewPages === true) {
 		myNumberOfPages = myNumberOfPages + myDocument.pages.length;
 	}
 
@@ -419,7 +438,11 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 			myDocument.paragraphStyles.add({ name: myLabelStyle });
 		}
 	}
-	myDocumentPreferences.pagesPerDocument = myNumberOfPages;
+
+	// Edit: if the document length is shorter than the new size
+	if (myDocument.pages.length <= myNumberOfPages) {
+		myDocumentPreferences.pagesPerDocument = myNumberOfPages;
+	}
 	myDocumentPreferences.facingPages = false;
 
 	// Edit: if new doc or not
@@ -442,11 +465,11 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	var myFrameHeight = myRowHeight - myVerticalOffset;
 	var myPages = myDocument.pages;
 
-	// Construct the frames in reverse order. Don't laugh--this will  
-	// save us time later (when we place the graphics).  
+	// Construct the frames in reverse order. Don't laugh--this will
+	// save us time later (when we place the graphics).
 	// Edit: stops at page offset
 	for (myCounter = myDocument.pages.length - 1; myCounter >= myPageOffset; myCounter--) {
-		myPage = myPages.item(myCounter);
+		var myPage = myPages.item(myCounter);
 
 		for (var myRowCounter = myNumberOfRows; myRowCounter >= 1; myRowCounter--) {
 			myY1 = myTopMargin + (myRowHeight * (myRowCounter - 1));
@@ -470,43 +493,96 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 		}
 	}
 
-	// Because we constructed the frames in reverse order, rectangle 1  
-	// is the first rectangle on page 1, so we can simply iterate through  
-	// the rectangles, placing a file in each one in turn. myFiles = myFolder.Files;  
-	for (myCounter = 0; myCounter < myNumberOfFrames; myCounter++) {
-		// Edit: added [1] to account for the change from an object to an array
-		myFile = myFiles[myCounter][1];
+	// Because we constructed the frames in reverse order, rectangle 1
+	// is the first rectangle on page 1, so we can simply iterate through
+	// the rectangles, placing a file in each one in turn. myFiles = myFolder.Files;
 
-		//Edit: changed page item selection
-		myRectangle = myDocument.rectangles.item(myCounter + myFrameOffset);
+	// Edit: added separate counter for files
+	var myFileCounter = 0;
 
-		// Edit: check if the frame is empty
-		if (myRectangle.contentType == ContentType.unassigned) {
-			myRectangle.place(File(myFile));
-			myRectangle.label = myFile.fsName.toString();
-			//Apply fitting options as specified.
-			if (myFitProportional) {
-				myRectangle.fit(FitOptions.proportionally);
-			}
-			if (myFitCenterContent) {
-				myRectangle.fit(FitOptions.centerContent);
-			}
-			if (myFitFrameToContent) {
-				myRectangle.fit(FitOptions.frameToContent);
-			}
-			//Add the label, if necessary.
-			if (myMakeLabels == true) {
-				myAddLabel(myRectangle, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName);
+	for (myCounter = 0; myCounter < myDocument.rectangles.length; myCounter++) {
+		// Edit: if the counter does not exceed the file array length
+		if (myFileCounter <= myFiles.length - 1) {
+			// Edit: added [1] to account for the change from an object to an array
+			myFile = myFiles[myFileCounter][1];
+
+			//Edit: changed page item selection
+			myRectangle = myDocument.rectangles.item(myCounter + myFrameOffset);
+
+			// Edit: check if the frame is empty
+			if (myRectangle.contentType === ContentType.unassigned) {
+				myRectangle.place(File(myFile));
+				myRectangle.label = myFile.fsName.toString();
+
+				//Apply fitting options as specified.
+				if (myFitProportional) {
+					myRectangle.fit(FitOptions.proportionally);
+				}
+				if (myFitCenterContent) {
+					myRectangle.fit(FitOptions.centerContent);
+				}
+				if (myFitFrameToContent) {
+					myRectangle.fit(FitOptions.frameToContent);
+				}
+
+				//Add the label, if necessary.
+				if (myMakeLabels == true) {
+					myAddLabel(myRectangle, myLabelType, myLabelHeight, myLabelOffset, myLabelStyle, myLayerName);
+				}
+
+				myFileCounter++;
 			}
 		}
-
 	}
+
+	// Edit: added alignment options
+	/*for (myCounter = 0; myCounter <= myPages.length - 1; myCounter++) {
+		myPage = myPages.item(myCounter);
+
+		if (myAlignment === "Top Left") {
+			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Top Center") {
+			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Top Right") {
+			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Middle Left") {
+			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Middle Center") {
+			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Middle Right") {
+			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Bottom Left") {
+			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Bottom Center") {
+			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+		else if (myAlignment === "Bottom Right") {
+			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+	}*/
+
 	if (myRemoveEmptyFrames == 1) {
 		for (var myCounter = myDocument.rectangles.length - 1; myCounter >= 0; myCounter--) {
 			if (myDocument.rectangles.item(myCounter).contentType == ContentType.unassigned) {
 				myDocument.rectangles.item(myCounter).remove();
 			} else {
-				//As soon as you encounter a rectangle with content, exit the loop. 
+				//As soon as you encounter a rectangle with content, exit the loop.
 				break;
 			}
 		}

@@ -160,7 +160,24 @@ function myDisplayDialog(myFiles, myFolder) {
 	var myDialog = app.dialogs.add({ name: "Image Catalog" });
 
 	// Edit: added alignment array
-	var myAlignments = ["Top Left", "Top Center", "Top Right", "Middle Left", "Middle Center", "Middle Right", "Bottom Left", "Bottom Center", "Bottom Right"];
+	/*var myAlignments = [
+		"Top Left",
+		"Top Center",
+		"Top Right",
+		"Middle Left",
+		"Middle Center",
+		"Middle Right",
+		"Bottom Left",
+		"Bottom Center",
+		"Bottom Right"
+		];*/
+	var myAlignments = [
+		"None",
+		"Top",
+		"Left",
+		"Right",
+		"Bottom"
+	];
 
 	with (myDialog.dialogColumns.add()) {
 		with (dialogRows.add()) {
@@ -382,12 +399,16 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	var myParagraphStyle, myError;
 	var myFramesPerPage = myNumberOfRows * myNumberOfColumns;
 
+
 	// Edit: new doc or not
 	if (makeNewDocument === true) {
 		myDocument = app.documents.add();
 	} else {
 		myDocument = app.activeDocument;
 	}
+
+	// Edit: add new layer for images
+	var myNewLayer = myDocument.layers.add({ name: "layer " + (myDocument.layers.length + 1) });
 
 	//Edit: Create page offset
 	var myPageOffset = 0;
@@ -480,7 +501,8 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 				myX2 = myX1 + myFrameWidth;
 
 				myRectangle = myPage.rectangles.add(
-					myDocument.layers.item(-1),
+					// Edit: add to new layer
+					myNewLayer,
 					undefined,
 					undefined,
 					{
@@ -536,46 +558,36 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	}
 
 	// Edit: added alignment options
-	/*for (myCounter = 0; myCounter <= myPages.length - 1; myCounter++) {
+	/*
+	for (myCounter = 0; myCounter <= myPages.length - 1; myCounter++) {
 		myPage = myPages.item(myCounter);
 
-		if (myAlignment === "Top Left") {
-			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		if (myAlignment === "Top") {
 			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
 		}
-		else if (myAlignment === "Top Center") {
-			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-		}
-		else if (myAlignment === "Top Right") {
-			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-		}
-		else if (myAlignment === "Middle Left") {
+		else if (myAlignment === "Left") {
 			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
 		}
-		else if (myAlignment === "Middle Center") {
-			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
-		}
-		else if (myAlignment === "Middle Right") {
+		else if (myAlignment === "Right") {
 			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.HORIZONTAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
 		}
-		else if (myAlignment === "Bottom Left") {
-			myDocument.align(myPage.pageItems, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-		}
-		else if (myAlignment === "Bottom Center") {
-			myDocument.align(myPage.pageItems, AlignOptions.VERTICAL_CENTERS, AlignDistributeBounds.MARGIN_BOUNDS);
-			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
-		}
-		else if (myAlignment === "Bottom Right") {
-			myDocument.align(myPage.pageItems, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		else if (myAlignment === "Bottom") {
 			myDocument.align(myPage.pageItems, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
 		}
 	}*/
+	for (myCounter = 0; myCounter <= myNewLayer.pageItems.length - 1; myCounter++) {
+		myItem = myNewLayer.pageItems[myCounter];
+
+		if (myAlignment === "Top") {
+			myDocument.align(myItem, AlignOptions.TOP_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		} else if (myAlignment === "Left") {
+			myDocument.align(myItem, AlignOptions.LEFT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		} else if (myAlignment === "Right") {
+			myDocument.align(myItem, AlignOptions.RIGHT_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		} else if (myAlignment === "Bottom") {
+			myDocument.align(myItem, AlignOptions.BOTTOM_EDGES, AlignDistributeBounds.MARGIN_BOUNDS);
+		}
+	}
 
 	if (myRemoveEmptyFrames == 1) {
 		for (var myCounter = myDocument.rectangles.length - 1; myCounter >= 0; myCounter--) {

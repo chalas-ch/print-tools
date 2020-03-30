@@ -1,8 +1,6 @@
 ## ImageCatalog_improved.jsx
 
-Vidéo :
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/IgKFN7LuMM8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+Tutoriel vidéo : https://youtu.be/IgKFN7LuMM8
 
 ### Installation
 

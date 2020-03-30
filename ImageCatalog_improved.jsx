@@ -219,6 +219,7 @@ function myDisplayDialog(myFiles, myFolder) {
 					staticTexts.add({ staticLabel: "Number of Columns:", minWidth: myLabelWidth });
 					var myNumberOfColumnsField = integerEditboxes.add({ editValue: 1 });
 				}
+				/*
 				with (dialogRows.add()) {
 					staticTexts.add({ staticLabel: "Horizontal Offset:", minWidth: myLabelWidth });
 					var myHorizontalOffsetField = measurementEditboxes.add({
@@ -232,7 +233,7 @@ function myDisplayDialog(myFiles, myFolder) {
 						editValue: 0,
 						editUnits: MeasurementUnits.points
 					});
-				}
+				}*/
 				with (dialogRows.add()) {
 					with (dialogColumns.add()) {
 						staticTexts.add({ staticLabel: "Fitting:", minWidth: myLabelWidth });
@@ -287,7 +288,7 @@ function myDisplayDialog(myFiles, myFolder) {
 				// Edit: added make new document option
 				with (dialogRows.add()) {
 					var myMakeNewPagesCheckbox = checkboxControls.add({
-						staticLabel: "Add New Pages",
+						staticLabel: "Add New Pages                         ",
 						checkedState: true
 					});
 				}
@@ -364,8 +365,8 @@ function myDisplayDialog(myFiles, myFolder) {
 			var myFitProportional = myFitProportionalCheckbox.checkedState;
 			var myFitCenterContent = myFitCenterContentCheckbox.checkedState;
 			var myFitFrameToContent = myFitFrameToContentCheckbox.checkedState;
-			var myHorizontalOffset = myHorizontalOffsetField.editValue;
-			var myVerticalOffset = myVerticalOffsetField.editValue;
+			var myHorizontalOffset = 0; //myHorizontalOffsetField.editValue;
+			var myVerticalOffset = 0; //myVerticalOffsetField.editValue;
 			var myMakeLabels = myLabelsGroup.checkedState;
 			var myLabelType = myLabelTypeDropdown.selectedIndex;
 			var myLabelHeight = myLabelHeightField.editValue;

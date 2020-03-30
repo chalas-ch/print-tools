@@ -538,6 +538,7 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 		// Edit: if the counter does not exceed the file array length
 		if (myFileCounter <= myFiles.length - 1) {
 
+			// Edit: Because Windows and MacOS produce different arrays of files
 			if (!myFiles[myFileCounter][1]) {
 				myFile = myFiles[myFileCounter];
 			}

@@ -537,8 +537,14 @@ function myMakeImageCatalog(myFiles, myNumberOfRows, myNumberOfColumns, myRemove
 	for (myCounter = 0; myCounter < myDocument.rectangles.length; myCounter++) {
 		// Edit: if the counter does not exceed the file array length
 		if (myFileCounter <= myFiles.length - 1) {
-			// Edit: added [1] to account for the change from an object to an array
-			myFile = myFiles[myFileCounter][1];
+
+			if (!myFiles[myFileCounter][1]) {
+				myFile = myFiles[myFileCounter];
+			}
+			else {
+				// Edit: added [1] to account for the change from an object to an array
+				myFile = myFiles[myFileCounter][1];
+			}
 
 			//Edit: changed page item selection
 			myRectangle = myDocument.rectangles.item(myCounter + myFrameOffset);
